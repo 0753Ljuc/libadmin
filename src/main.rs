@@ -1,5 +1,5 @@
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
-    let _rocket = libadmin::rocket().launch().await?;
-    Ok(())
+use libadmin::launch;
+
+fn main() {
+    launch().unwrap();
 }

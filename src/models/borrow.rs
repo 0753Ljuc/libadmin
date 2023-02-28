@@ -1,14 +1,23 @@
-use chrono::{DateTime, Duration, Utc};
+#[derive(serde::Serialize)]
+pub struct ResponseBorrow {
+    pub borrow_id: i32,
+    pub book_id: i32,
+    pub user_id: i32,
+    pub borrow_date: chrono::NaiveDate,
+    pub book_name: String,
+    pub borrow_status: i32,
+    pub username: String,
+}
 
 pub struct Borrow {
-    // order id
-    pub oid: u32,
-    // book id
-    pub bid: u32,
-    // borrow date
-    pub o_date: DateTime<Utc>,
-    // the maximum loan time.
-    pub max_loan: Duration,
-    // the maximum loan count.
-    pub max_count: u8,
+    pub borrow_id: i32,
+    pub book_id: i32,
+    pub user_id: i32,
+    pub borrow_date: chrono::NaiveDate,
+    pub borrow_status: i32,
+}
+
+#[derive(serde::Deserialize)]
+pub struct NewBorrow {
+    pub book_id: i32,
 }

@@ -6,11 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.23"
+# chrono = {version = "0.4.19", features = ["serde"] }
 dotenv = "0.15.0"
 jsonwebtoken = "8.2.0"
+ring = "0.16.20"
 rocket = { version = "0.5.0-rc.2", features = ["json","serde_json",]}
+rocket_auth = { version = "0.4.0", features = ["sqlx-postgres"] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master" }
+serde = { version = "1.0.152", features = ["derive"] }
+
 
 [dependencies.rocket_db_pools]
 version = "0.1.0-rc.2"
@@ -18,7 +22,7 @@ features = ["sqlx_postgres"]
 
 [dependencies.sqlx]
 default-features = false
-features = ["macros", "migrate", "offline", "postgres"]
+features = ["macros", "decimal", "offline", "postgres", "chrono"]
 
-
-
+[dependencies.chrono]
+features = ["serde"]
