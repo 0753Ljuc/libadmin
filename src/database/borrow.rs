@@ -1,4 +1,3 @@
-use rocket::futures::TryFutureExt;
 use sqlx::{Pool, Postgres, Transaction};
 
 use crate::custom_error::{Error, ErrorType};

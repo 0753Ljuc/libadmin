@@ -1,12 +1,9 @@
 use rocket::{
-    async_trait,
     form::Form,
     get, post,
-    request::{self, FromRequest, Outcome, Request},
-    serde::json::{serde_json::json, Value},
-    FromForm, State,
+    serde::json::{serde_json::json, Value}, State,
 };
-use rocket_auth::{Auth, Error, Login, Signup, User, Users};
+use rocket_auth::{Auth, Error, Login, User};
 use sqlx::{query, query_as, PgPool};
 
 use crate::{
@@ -99,6 +96,5 @@ async fn show_all_users(
     user: Option<User>,
 ) -> Result<Value, custom_error::Error> {
     let users: Vec<User> = query_as("select * from users;").fetch_all(&**conn).await?;
-    println!("{:?}", users);
     Ok(json!({"users": users, "user": user}))
 }

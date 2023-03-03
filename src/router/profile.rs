@@ -5,7 +5,7 @@ use rocket_auth::Auth;
 use sqlx::PgPool;
 
 use crate::{
-    custom_error::{self, Error, ErrorType},
+    custom_error::{Error, ErrorType},
     database::profile,
     models::profile::Profile,
     utils::helper::check_auth,

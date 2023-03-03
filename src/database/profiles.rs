@@ -1,5 +1,5 @@
-use rocket::serde::json::Json;
-use sqlx::{query, Postgres};
+
+use sqlx::{query};
 
 use crate::models::profile::ProfileForm;
 

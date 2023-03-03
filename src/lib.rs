@@ -1,11 +1,12 @@
 use std::{collections::HashSet, env};
 
-use config::generate_figment_with_env;
+
+
 use database::profiles::Profiles;
-use rocket::{catchers, http::Method, launch, routes};
-use rocket_auth::{Error, Users};
-use rocket_cors::{AllowedHeaders, AllowedOrigins, Cors, CorsOptions};
-use sqlx::{query, PgPool};
+use rocket::{http::Method, routes};
+use rocket_auth::{Users};
+use rocket_cors::{AllowedOrigins, Cors, CorsOptions};
+use sqlx::{PgPool};
 
 mod config;
 mod custom_error;
@@ -102,9 +103,11 @@ pub async fn launch() -> Result<(), rocket_auth::Error> {
         .manage(users)
         .manage(profiles)
         .attach(cors_fairing())
-        // .attach(Template::fairing())
         .launch()
         .await
-        .unwrap();
+        .map_err(|e| {
+            println!("Error: {e:?}");
+
+        });
     Ok(())
 }

@@ -1,6 +1,6 @@
 use crate::{
     custom_error::{Error as CustomError, ErrorType},
-    database::{self, Db},
+    database::{self},
     models::category::{Category, NewCategory},
     utils::helper::check_auth,
 };

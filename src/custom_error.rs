@@ -1,4 +1,4 @@
-use ring::error::Unspecified;
+
 use rocket::{
     response::Responder,
     serde::json::{serde_json::json, Value},
@@ -33,8 +33,6 @@ pub enum Error {
     #[response(status = 500, content_type = "json")]
     Other(Value),
 
-    #[response(status = 500, content_type = "json")]
-    PasswordHashError(Value),
 
     #[response(status = 500, content_type = "json")]
     DbError(Value),
@@ -77,9 +75,6 @@ impl Error {
             ErrorType::Other => Self::Other(json!({
               "error": msg.unwrap_or("Server error")
             })),
-            ErrorType::PasswordHashError => Self::PasswordHashError(json!({
-                "error": msg.unwrap_or("Password hash error")
-            })),
             ErrorType::DbError => Self::DbError(json!({
                 "error": msg.unwrap_or("Database error")
             })),
@@ -106,8 +101,6 @@ pub enum ErrorType {
     WrongEmailOrPassword,
     EmailDoesNotExist(String),
 
-    PasswordHashError,
-
     CategoryAlreadyExists,
 
     DbError,
@@ -115,14 +108,8 @@ pub enum ErrorType {
     Other,
 }
 
-impl From<Unspecified> for Error {
-    fn from(e: Unspecified) -> Self {
-        Self::new(ErrorType::PasswordHashError, None)
-    }
-}
-
 impl From<sqlx::Error> for Error {
-    fn from(e: sqlx::Error) -> Self {
+    fn from(_e: sqlx::Error) -> Self {
         Self::new(ErrorType::DbError, None)
     }
 }

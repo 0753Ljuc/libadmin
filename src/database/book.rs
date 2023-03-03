@@ -1,7 +1,7 @@
 use sqlx::{Pool, Postgres};
 
 use crate::{
-    custom_error::{Error, ErrorType},
+    custom_error::{Error},
     models::book::{Book, EditBook, NewBook},
 };
 
