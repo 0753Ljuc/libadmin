@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS borrows (
   FOREIGN KEY (book_id) REFERENCES books(book_id),
   user_id INTEGER NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  borrow_date DATE NOT NULL DEFAULT CURRENT_DATE
+  borrow_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  borrow_status INTEGER NOT NULL DEFAULT 0
 );

@@ -1,5 +1,0 @@
-[default]
-port = 8080
-
-[release]
-secret_key = "NgTG3EctdBVgUhp2Ye9HeDYkXmdeDBbgD7Jm+XMfK1M="

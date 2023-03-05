@@ -1,18 +1,21 @@
 use std::{collections::HashSet, env};
 
-
-
-use database::profiles::Profiles;
 use rocket::{http::Method, routes};
-use rocket_auth::{Users};
+use rocket_auth::Users;
 use rocket_cors::{AllowedOrigins, Cors, CorsOptions};
-use sqlx::{PgPool};
+use sqlx::{query_file, PgPool};
 
+#[cfg(not(feature="mock"))]
 mod config;
+#[cfg(not(feature="mock"))]
 mod custom_error;
+#[cfg(not(feature="mock"))]
 mod database;
+#[cfg(not(feature="mock"))]
 mod models;
+#[cfg(not(feature="mock"))]
 mod router;
+#[cfg(not(feature="mock"))]
 mod utils;
 
 fn cors_fairing() -> Cors {
@@ -36,9 +39,24 @@ fn cors_fairing() -> Cors {
     .expect("Cors fairing cannot be created")
 }
 
+#[cfg(not(feature="mock"))]
 #[rocket::main]
 pub async fn launch() -> Result<(), rocket_auth::Error> {
     dotenv::dotenv().ok();
+
+    let figment = rocket::Config::figment()
+        .merge(("port", env::var("PORT").unwrap_or(8000.to_string())))
+        .merge((
+            "secret_key",
+            env::var("SECRET_KEY").unwrap_or_else(|_| {
+                assert!(
+                    cfg!(debug_assertions),
+                    "The secret_key should be set in release mode."
+                );
+                String::new()
+            }),
+        ));
+
     let database_url =
         env::var("DATABASE_URL").expect("the DATABASE_URL env variable should not be empty");
 
@@ -47,12 +65,9 @@ pub async fn launch() -> Result<(), rocket_auth::Error> {
     let users: Users = conn.clone().into();
     users.create_table().await?;
 
-    let profiles: Profiles = conn.clone().into();
-    profiles.create_table().await?;
+    create_tables(&conn).await?;
 
-    // todo: run all "create table" migrations for initial table
-
-    let _ = rocket::build()
+    let _ = rocket::custom(figment)
         .mount(
             "/api/v1/auth",
             routes![
@@ -101,13 +116,28 @@ pub async fn launch() -> Result<(), rocket_auth::Error> {
         )
         .manage(conn)
         .manage(users)
-        .manage(profiles)
         .attach(cors_fairing())
         .launch()
         .await
         .map_err(|e| {
             println!("Error: {e:?}");
-
         });
+    Ok(())
+}
+
+async fn create_tables(conn: &PgPool) -> Result<(), sqlx::Error> {
+    query_file!("migrations/2023_03_05_000001_create_profiles_table.sql")
+        .execute(conn)
+        .await?;
+    query_file!("migrations/2023_03_05_000003_create_categories_table.sql")
+        .execute(conn)
+        .await?;
+    query_file!("migrations/2023_03_05_000004_create_books_table.sql")
+        .execute(conn)
+        .await?;
+    query_file!("migrations/2023_03_05_000006_create_borrow_table.sql")
+        .execute(conn)
+        .await?;
+
     Ok(())
 }

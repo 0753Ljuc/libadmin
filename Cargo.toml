@@ -4,6 +4,13 @@ version = "0.1.0"
 edition = "2021"
 default-run = "libadmin"
 
+[features]
+mock=[]
+
+[[bin]]
+name="insert_mock_data"
+path="src/bin/insert_mock_data.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -20,7 +27,7 @@ features = ["sqlx_postgres"]
 
 [dependencies.sqlx]
 default-features = false
-features = ["macros", "decimal", "offline", "postgres", "chrono"]
+features = ["macros", "migrate", "decimal", "offline", "postgres", "chrono"]
 
 [dependencies.chrono]
 features = ["serde"]

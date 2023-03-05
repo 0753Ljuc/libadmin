@@ -1,5 +1,4 @@
-
-use sqlx::{query};
+use sqlx::query;
 
 use crate::models::profile::ProfileForm;
 
@@ -14,28 +13,6 @@ impl From<sqlx::Pool<sqlx::Postgres>> for Profiles {
 }
 
 impl Profiles {
-    pub async fn create_table(&self) -> Result<(), sqlx::Error> {
-        query!(
-            "
-            CREATE TABLE IF NOT EXISTS profiles(
-              profile_id SERIAL PRIMARY KEY,
-              username VARCHAR(64) NOT NULL,
-              gender VARCHAR(1) NOT NULL,
-              user_id INTEGER,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
-            )
-        "
-        )
-        .execute(&self.conn)
-        .await
-        .map_err(|e| {
-            println!("Error: {e}");
-            e
-        })?;
-        Ok(())
-    }
-
     pub async fn create_profile(
         &self,
         profile: &ProfileForm,
