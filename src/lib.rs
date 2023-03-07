@@ -1,51 +1,36 @@
-use std::{collections::HashSet, env};
-
-use rocket::{http::Method, routes};
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::{Header, Method, Status};
+use rocket::{routes, Request, Response};
 use rocket_auth::Users;
-use rocket_cors::{AllowedOrigins, Cors, CorsOptions};
 use sqlx::{query_file, PgPool};
+use std::env;
 
-#[cfg(not(feature="mock"))]
+#[cfg(not(feature = "mock"))]
 mod config;
-#[cfg(not(feature="mock"))]
+#[cfg(not(feature = "mock"))]
 mod custom_error;
-#[cfg(not(feature="mock"))]
+#[cfg(not(feature = "mock"))]
 mod database;
-#[cfg(not(feature="mock"))]
+#[cfg(not(feature = "mock"))]
 mod models;
-#[cfg(not(feature="mock"))]
+#[cfg(not(feature = "mock"))]
 mod router;
-#[cfg(not(feature="mock"))]
+#[cfg(not(feature = "mock"))]
 mod utils;
 
-fn cors_fairing() -> Cors {
-    let allowed_origins =
-        AllowedOrigins::some_exact(&["http://127.0.0.1:5173", "http://localhost:5173"]);
-
-    let allowed_methods: HashSet<rocket_cors::Method> =
-        vec![Method::Get, Method::Post, Method::Put, Method::Delete]
-            .into_iter()
-            .map(From::from)
-            .collect();
-
-    CorsOptions {
-        allowed_origins,
-        allowed_methods,
-        allow_credentials: true,
-        // allowed_headers: AllowedHeaders::some(&["Authorization"]),
-        ..Default::default()
-    }
-    .to_cors()
-    .expect("Cors fairing cannot be created")
-}
-
-#[cfg(not(feature="mock"))]
+#[cfg(not(feature = "mock"))]
 #[rocket::main]
 pub async fn launch() -> Result<(), rocket_auth::Error> {
     dotenv::dotenv().ok();
 
-    let figment = rocket::Config::figment()
-        .merge(("port", env::var("PORT").unwrap_or(8000.to_string())))
+    let figment = rocket::figment::Figment::from(rocket::Config::default())
+        .merge((
+            "port",
+            env::var("PORT")
+                .unwrap_or(8000.to_string())
+                .parse::<u16>()
+                .unwrap(),
+        ))
         .merge((
             "secret_key",
             env::var("SECRET_KEY").unwrap_or_else(|_| {
@@ -65,16 +50,15 @@ pub async fn launch() -> Result<(), rocket_auth::Error> {
     let users: Users = conn.clone().into();
     users.create_table().await?;
 
+    database::admin::create_admin(&conn, &users, "admin@163.com", "Admin123", "Admin").await?;
+
     create_tables(&conn).await?;
 
     let _ = rocket::custom(figment)
+        .mount("/", routes![health])
         .mount(
             "/api/v1/auth",
-            routes![
-                router::auth::post_signup,
-                router::auth::post_login,
-                router::auth::logout,
-            ],
+            routes![router::auth::post_login, router::auth::logout,],
         )
         .mount(
             "/api/v1/profile",
@@ -106,21 +90,14 @@ pub async fn launch() -> Result<(), rocket_auth::Error> {
                 router::borrow::return_borrow
             ],
         )
-        .mount(
-            "/api/v2/auth",
-            routes![
-                router::auth::post_signup_v2,
-                router::auth::post_login,
-                router::auth::logout,
-            ],
-        )
+        .mount("/api/v2/auth", routes![router::auth::post_signup_v2,])
+        .attach(CORS)
         .manage(conn)
         .manage(users)
-        .attach(cors_fairing())
         .launch()
         .await
         .map_err(|e| {
-            println!("Error: {e:?}");
+            println!("Error1 : {e:?}");
         });
     Ok(())
 }
@@ -140,4 +117,35 @@ async fn create_tables(conn: &PgPool) -> Result<(), sqlx::Error> {
         .await?;
 
     Ok(())
+}
+
+#[rocket::get("/health")]
+async fn health() -> &'static str {
+    "OK"
+}
+
+pub struct CORS;
+
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
+        if request.method() == Method::Options {
+            response.set_status(Status::NoContent);
+            response.set_header(Header::new(
+                "Access-Control-Allow-Methods",
+                "POST, PUT, GET, DELETE",
+            ));
+            response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        }
+        response.set_header(Header::new("Access-Control-Allow-Origin", "http://localhost:5173, http://106.55.24.94:8080"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+        response.set_header(Header::new("Vary", "Origin"));
+    }
 }

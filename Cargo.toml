@@ -7,9 +7,13 @@ default-run = "libadmin"
 [features]
 mock=[]
 
-[[bin]]
-name="insert_mock_data"
-path="src/bin/insert_mock_data.rs"
+# [[bin]]
+# name="insert_mock_data"
+# path="src/bin/insert_mock_data.rs"
+
+# [[bin]]
+# name="create_basic_tables"
+# path="src/bin/create_basic_tables.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,7 +21,6 @@ path="src/bin/insert_mock_data.rs"
 dotenv = "0.15.0"
 rocket = { version = "0.5.0-rc.2", features = ["json","serde_json",]}
 rocket_auth = { version = "0.4.0", features = ["sqlx-postgres"] }
-rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master" }
 serde = { version = "1.0.152", features = ["derive"] }
 
 
@@ -26,8 +29,10 @@ version = "0.1.0-rc.2"
 features = ["sqlx_postgres"]
 
 [dependencies.sqlx]
+version = "0.5.10"
 default-features = false
-features = ["macros", "migrate", "decimal", "offline", "postgres", "chrono"]
+features = ["macros", "decimal", "migrate", "offline", "postgres", "chrono"]
+
 
 [dependencies.chrono]
 features = ["serde"]

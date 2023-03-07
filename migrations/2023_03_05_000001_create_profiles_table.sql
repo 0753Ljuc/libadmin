@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS profiles(
   profile_id SERIAL PRIMARY KEY,
   username VARCHAR(64) NOT NULL,
-  gender VARCHAR(1) NOT NULL,
+  gender INTEGER NOT NULL DEFAULT 1, -- 0 is female, 1 is male
   user_id INTEGER,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   profile_type INTEGER NOT NULL DEFAULT 0,

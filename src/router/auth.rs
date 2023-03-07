@@ -1,42 +1,22 @@
 use rocket::{
     form::Form,
     get, post,
-    serde::json::{serde_json::json, Value}, State,
+    serde::json::{serde_json::json, Value},
+    State,
 };
 use rocket_auth::{Auth, Error, Login, User};
 use sqlx::{query, query_as, PgPool};
 
 use crate::{
-    custom_error, database::profiles::Profiles, models::profile::ProfileForm,
+    custom_error, database::profiles::create_profile, models::profile::ProfileForm,
     utils::helper::check_auth,
 };
-
-#[post("/user/signup", data = "<form>")]
-pub async fn post_signup(
-    conn: &State<PgPool>,
-    auth: Auth<'_>,
-    form: Form<ProfileForm>,
-    profiles: &State<Profiles>,
-) -> Result<(), custom_error::Error> {
-    println!("signup: {form:?}");
-    // should be rewrite as a transaction
-    let form = form.into_inner();
-    auth.signup(&form.signup).await?;
-    let user_id = query!("SELECT id FROM users WHERE email = $1", &form.signup.email)
-        .fetch_one(conn.inner())
-        .await?
-        .id;
-    profiles.create_profile(&form, user_id).await?;
-    auth.login(&form.signup.into()).await?;
-    Ok(())
-}
 
 #[post("/user/signup", data = "<form>")]
 pub async fn post_signup_v2(
     conn: &State<PgPool>,
     auth: Auth<'_>,
     form: Form<ProfileForm>,
-    profiles: &State<Profiles>,
 ) -> Result<(), custom_error::Error> {
     let user = auth.get_user().await;
     check_auth(&user).await?;
@@ -55,7 +35,7 @@ pub async fn post_signup_v2(
         .fetch_one(conn.inner())
         .await?
         .id;
-    profiles.create_profile(&form, user_id).await?;
+    create_profile(conn, &form, user_id).await?;
     Ok(())
 }
 
