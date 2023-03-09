@@ -143,9 +143,8 @@ impl Fairing for CORS {
                 "POST, PUT, GET, DELETE",
             ));
             response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
-            response.set_header(Header::new("Access-Control-Allow-Origin", "http://localhost:5173, http://106.55.24.94:8080"));
-        }
+          }
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
-        response.set_header(Header::new("Vary", "Origin"));
     }
 }
