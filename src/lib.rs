@@ -142,9 +142,12 @@ impl Fairing for CORS {
                 "Access-Control-Allow-Methods",
                 "POST, PUT, GET, DELETE",
             ));
-            response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
-          }
-        response.set_header(Header::new("Access-Control-Allow-Origin", "http://106.55.24.94:8080"));
+            response.set_header(Header::new("Access-Control-Allow-Headers", "Content-Type"));
+        }
+        response.set_header(Header::new(
+            "Access-Control-Allow-Origin",
+            "http://106.55.24.94:8080",
+        ));
         response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
     }
 }
